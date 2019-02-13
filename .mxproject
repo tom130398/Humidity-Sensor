@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=U:/Embedded System Design/HumidSensor/Inc
+HeaderPath=C:/Users/Tom/Desktop/HumidSensor/Inc
 HeaderFiles=stm32l1xx_it.h;stm32l1xx_hal_conf.h;main.h;
-SourcePath=U:/Embedded System Design/HumidSensor/Src
+SourcePath=C:/Users/Tom/Desktop/HumidSensor/Src
 SourceFiles=stm32l1xx_it.c;stm32l1xx_hal_msp.c;main.c;
 
 [PreviousLibFiles]

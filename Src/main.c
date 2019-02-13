@@ -39,7 +39,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32l1xx_hal.h"
-
+#include <string.h>
 /* USER CODE BEGIN Includes */
 #include "dwt_stm32_delay.h"
 /* USER CODE END Includes */
@@ -54,6 +54,8 @@ uint16_t sum, RH, TEMP;
 int temp_low, temp_high, rh_low, rh_high;
 char temp_char1[2], temp_char2, rh_char1[2], rh_char2;
 uint8_t check = 0;
+uint8_t temp[17];
+uint8_t humi[17];
 GPIO_InitTypeDef GPIO_InitStruct;
 void set_gpio_output (void)
 {
@@ -78,7 +80,7 @@ void set_gpio_input (void)
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
-uint32_t DWT_Delay_Init(void);
+
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 
@@ -133,8 +135,6 @@ uint8_t read_data (void)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	uint8_t msg3[20];
-	uint8_t msg4[20];
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -156,6 +156,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  DWT_Delay_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -186,10 +187,11 @@ int main(void)
 	  rh_high = RH%10;
 	  HAL_Delay (1000);
 
-//	  sprintf(msg3, "%d\n\r", TEMP);
-//	  sprintf(msg4, "%d\n\r", RH);
-	  HAL_UART_Transmit(&huart2, (uint8_t *)"a", 4, 100);
-	  //HAL_UART_Transmit(&huart2, msg4, 4, 100);
+	 sprintf((char *)temp, "Temp: %d,%dC\n", temp_low, temp_high);
+	 sprintf((char *)humi, "RH: %d,%d", rh_low, rh_high);
+	 HAL_UART_Transmit(&huart2, temp, 4, 100);
+	 HAL_UART_Transmit(&huart2, humi, 4, 100);
+	 HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 

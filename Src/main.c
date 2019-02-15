@@ -39,12 +39,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32l1xx_hal.h"
-#include <string.h>
+
 /* USER CODE BEGIN Includes */
 #include "dwt_stm32_delay.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
+UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -80,6 +81,7 @@ void set_gpio_input (void)
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -156,7 +158,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  DWT_Delay_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -187,10 +189,10 @@ int main(void)
 	  rh_high = RH%10;
 	  HAL_Delay (1000);
 
-	 sprintf((char *)temp, "Temp: %d,%dC\n", temp_low, temp_high);
-	 sprintf((char *)humi, "RH: %d,%d", rh_low, rh_high);
-	 HAL_UART_Transmit(&huart2, temp, 4, 100);
-	 HAL_UART_Transmit(&huart2, humi, 4, 100);
+	 sprintf((char *)temp, "Temp: %d.%dC\n", temp_low, temp_high);
+	 HAL_UART_Transmit(&huart2, temp, strlen(temp), 100);
+	 sprintf((char *)humi, "RH: %d.%d\n", rh_low, rh_high);
+	 HAL_UART_Transmit(&huart2, humi, strlen(humi), 100);
 	 HAL_Delay(1000);
   }
   /* USER CODE END 3 */
@@ -251,6 +253,25 @@ void SystemClock_Config(void)
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
+/* USART1 init function */
+static void MX_USART1_UART_Init(void)
+{
+
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+}
+
 /* USART2 init function */
 static void MX_USART2_UART_Init(void)
 {
@@ -276,8 +297,6 @@ static void MX_USART2_UART_Init(void)
         * Output
         * EVENT_OUT
         * EXTI
-     PA9   ------> USART1_TX
-     PA10   ------> USART1_RX
 */
 static void MX_GPIO_Init(void)
 {
@@ -305,14 +324,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PA9 PA10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_9|GPIO_PIN_10;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PB3 */
   GPIO_InitStruct.Pin = GPIO_PIN_3;

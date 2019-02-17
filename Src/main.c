@@ -39,6 +39,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32l1xx_hal.h"
+#include "esp8266.h"
 
 /* USER CODE BEGIN Includes */
 #include "dwt_stm32_delay.h"
@@ -128,7 +129,50 @@ uint8_t read_data (void)
 }
 
 /* USER CODE END 0 */
+void ESP8266_Init(UART_HandleTypeDef *uart1){
+	uint8_t at1[]="AT\n";
+	uint8_t at2[]="AT+RST\n";
+	uint8_t at3[]="AT+CWMODE=1\n";
+	uint8_t at4[]="AT+CWJAP=\"MinhHoang\",\"19982006\"\n";
+	uint8_t at5[]="AT+CIPMUX=0\n";
+	HAL_UART_Transmit(uart1, at1, sizeof(at1), 100);
+	HAL_Delay(1000);
+	HAL_UART_Transmit(uart1, at2, sizeof(at2), 100);
+	HAL_Delay(1000);
+	HAL_UART_Transmit(uart1, at3, sizeof(at3), 100);
+	HAL_Delay(1000);
+	HAL_UART_Transmit(uart1, at4, sizeof(at4), 100);
+	HAL_Delay(1000);
+	HAL_UART_Transmit(uart1, at5, sizeof(at5), 100);
+	HAL_Delay(1000);
+}
 
+void Send_To_Server(UART_HandleTypeDef *uart1, uint16_t temperature, uint16_t humidity){
+	uint8_t start[]="AT+CIPSTART=\"TCP\",\"184.106.153.149\",80\n";
+	uint8_t send[]="AT+CIPSEND=51\n";
+	uint8_t close[]="AT+CIPCLOSE\n";
+	uint8_t tempdata[100];
+	uint8_t humidata[100];
+	sprintf((char *)tempdata, "GET /update?api_key=%s&field%d=%d\r\n", API_WRITE_KEY, 1, temperature / 10);
+	sprintf((char *)humidata, "GET /update?api_key=%s&field%d=%d\r\n", API_WRITE_KEY, 2, humidity / 10);
+	HAL_UART_Transmit(uart1, close, strlen((char *)close), 100);
+	HAL_Delay(1000);
+	HAL_UART_Transmit(uart1, start, strlen((char *)start), 100);
+	HAL_Delay(1000);
+	HAL_UART_Transmit(uart1, send, strlen((char *)send), 100);
+	HAL_Delay(1000);
+	HAL_UART_Transmit(uart1, tempdata, strlen((char *)tempdata), 100);
+	HAL_Delay(1000);
+
+	HAL_UART_Transmit(uart1, close, strlen((char *)close), 100);
+	HAL_Delay(1000);
+	HAL_UART_Transmit(uart1, start, strlen((char *)start), 100);
+	HAL_Delay(1000);
+	HAL_UART_Transmit(uart1, send, strlen((char *)send), 100);
+	HAL_Delay(1000);
+	HAL_UART_Transmit(uart1, humidata, strlen((char *)humidata), 100);
+	HAL_Delay(1000);
+}
 /**
   * @brief  The application entry point.
   *
@@ -159,6 +203,8 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_USART1_UART_Init();
+  DWT_Delay_Init();
+  ESP8266_Init(&huart1);
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -193,6 +239,7 @@ int main(void)
 	 HAL_UART_Transmit(&huart2, temp, strlen(temp), 100);
 	 sprintf((char *)humi, "RH: %d.%d\n", rh_low, rh_high);
 	 HAL_UART_Transmit(&huart2, humi, strlen(humi), 100);
+	 Send_To_Server(&huart1, TEMP, RH);
 	 HAL_Delay(1000);
   }
   /* USER CODE END 3 */

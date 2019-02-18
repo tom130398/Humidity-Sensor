@@ -130,31 +130,43 @@ uint8_t read_data (void)
 
 /* USER CODE END 0 */
 void ESP8266_Init(UART_HandleTypeDef *uart1){
-	uint8_t at1[]="AT\n";
-	uint8_t at2[]="AT+RST\n";
-	uint8_t at3[]="AT+CWMODE=1\n";
-	uint8_t at4[]="AT+CWJAP=\"MinhHoang\",\"19982006\"\n";
-	uint8_t at5[]="AT+CIPMUX=0\n";
+	uint8_t at1[]="AT\r\n";
+	uint8_t at2[]="AT+RESTORE\r\n";
+	uint8_t at6[]="AT+GMR\r\n";
+	uint8_t at3[]="AT+CWMODE=3\r\n";
+	uint8_t at7[]="AT+CWLAP\r\n";
+	uint8_t at4[]="AT+CWJAP=\"iPhone\",\"Gauxinhnhat\"\r\n";
+	uint8_t at5[]="AT+CWJAP?\r\n";
+	uint8_t at8[]="AT+CIPMUX=0\r\n";
 	HAL_UART_Transmit(uart1, at1, sizeof(at1), 100);
 	HAL_Delay(1000);
 	HAL_UART_Transmit(uart1, at2, sizeof(at2), 100);
 	HAL_Delay(1000);
+	HAL_UART_Transmit(uart1, at6, sizeof(at3), 100);
+	HAL_Delay(1000);
 	HAL_UART_Transmit(uart1, at3, sizeof(at3), 100);
+	HAL_Delay(1000);
+	HAL_UART_Transmit(uart1, at7, sizeof(at3), 100);
 	HAL_Delay(1000);
 	HAL_UART_Transmit(uart1, at4, sizeof(at4), 100);
 	HAL_Delay(1000);
 	HAL_UART_Transmit(uart1, at5, sizeof(at5), 100);
 	HAL_Delay(1000);
+	HAL_UART_Transmit(uart1, at8, sizeof(at5), 100);
+	HAL_Delay(1000);
 }
 
 void Send_To_Server(UART_HandleTypeDef *uart1, uint16_t temperature, uint16_t humidity){
-	uint8_t start[]="AT+CIPSTART=\"TCP\",\"184.106.153.149\",80\n";
-	uint8_t send[]="AT+CIPSEND=51\n";
-	uint8_t close[]="AT+CIPCLOSE\n";
+
+	uint8_t start[]="AT+CIPSTART=\"TCP\",\"184.106.153.149\",80\r\n";
+	uint8_t send[]="AT+CIPSEND=51\r\n";
+	uint8_t close[]="AT+CIPCLOSE\r\n";
+
 	uint8_t tempdata[100];
 	uint8_t humidata[100];
-	sprintf((char *)tempdata, "GET /update?api_key=%s&field%d=%d\r\n", API_WRITE_KEY, 1, temperature / 10);
-	sprintf((char *)humidata, "GET /update?api_key=%s&field%d=%d\r\n", API_WRITE_KEY, 2, humidity / 10);
+	sprintf((char *)tempdata, "GET /update?api_key=%s&field%d=%d\r\n", API_WRITE_KEY, 1, temperature);
+	sprintf((char *)humidata, "GET /update?api_key=%s&field%d=%d\r\n", API_WRITE_KEY, 2, humidity);
+
 	HAL_UART_Transmit(uart1, close, strlen((char *)close), 100);
 	HAL_Delay(1000);
 	HAL_UART_Transmit(uart1, start, strlen((char *)start), 100);
@@ -239,7 +251,7 @@ int main(void)
 	 HAL_UART_Transmit(&huart2, temp, strlen(temp), 100);
 	 sprintf((char *)humi, "RH: %d.%d\n", rh_low, rh_high);
 	 HAL_UART_Transmit(&huart2, humi, strlen(humi), 100);
-	 Send_To_Server(&huart1, TEMP, RH);
+	 Send_To_Server(&huart1, temp_low, rh_low);
 	 HAL_Delay(1000);
   }
   /* USER CODE END 3 */

@@ -152,7 +152,7 @@ void ESP8266_Init(UART_HandleTypeDef *uart1){
 	HAL_Delay(1000);
 	HAL_UART_Transmit(uart1, at5, sizeof(at5), 100);
 	HAL_Delay(1000);
-	HAL_UART_Transmit(uart1, at8, sizeof(at5), 100);
+	HAL_UART_Transmit(uart1, at8, sizeof(at8), 100);
 	HAL_Delay(1000);
 }
 
